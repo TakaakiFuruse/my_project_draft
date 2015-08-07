@@ -4,8 +4,7 @@ require 'open-uri'
 require 'pry'
 
 
-tickers = [6467]
-# , 1301, 1332, 1333, 1352, 1377, 1379, 1414, 1417, 1419, 1420, 1514]
+tickers = [6467, 1301, 1332]
 
 tickers.each do |ticker|
   yahoo = Nokogiri::HTML(open("http://stocks.finance.yahoo.co.jp/stocks/detail/?code=#{ticker}.T"))
@@ -38,7 +37,7 @@ tickers.each do |ticker|
   p yahoo.xpath("//td[@class='stoksPrice']").text.to_i
 
   puts "会社名"
-  p yahoo.at("//th[@class='symbol']/h1").text
+  p yahoo.at("//th[@class='symbol']/h1").text.gsub!(/\((株)\)/, "")
   puts "========================================="
 
 
