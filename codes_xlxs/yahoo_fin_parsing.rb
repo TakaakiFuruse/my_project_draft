@@ -2,42 +2,39 @@ require 'open-uri'
 require 'nokogiri'
 require 'pry'
 
-
 tickers = [6467, 1301, 1332]
 
 tickers.each do |ticker|
   yahoo = Nokogiri::HTML(open("http://stocks.finance.yahoo.co.jp/stocks/detail/?code=#{ticker}.T"))
 
-  puts "時価総額"
+  puts '時価総額'
   p yahoo.css("#rfindex > div.chartFinance
-             > div:nth-child(1) > dl > dd > strong").text.gsub!(/\,/,'').to_i
+             > div:nth-child(1) > dl > dd > strong").text.gsub!(/\,/, '').to_i
 
-  puts "発行済株式数"
+  puts '発行済株式数'
   p yahoo.css("#rfindex > div.chartFinance > div:nth-child(2)
-             > dl > dd > strong").text.gsub!(/\,/,'').to_i
+             > dl > dd > strong").text.gsub!(/\,/, '').to_i
 
-  puts "PER"
+  puts 'PER'
   p yahoo.css("#rfindex > div.chartFinance > div:nth-child(5)
-             > dl > dd > strong").text.gsub!(/\((連)\) /, "").to_f
+             > dl > dd > strong").text.gsub!(/\((連)\) /, '').to_f
 
-  puts "PBR"
+  puts 'PBR'
   p yahoo.css("#rfindex > div.chartFinance > div:nth-child(6)
-             > dl > dd > strong").text.gsub!(/\((連)\) /, "").to_f
+             > dl > dd > strong").text.gsub!(/\((連)\) /, '').to_f
 
-  puts "前日終値"
+  puts '前日終値'
   p yahoo.css("#detail > div.innerDate
             > div:nth-child(1) > dl > dd > strong").text.to_i
 
-  puts "始値"
+  puts '始値'
   p yahoo.css("#detail > div.innerDate
             > div:nth-child(2) > dl > dd > strong").text.to_i
 
-  puts "現在値"
+  puts '現在値'
   p yahoo.xpath("//td[@class='stoksPrice']").text.to_i
 
-  puts "会社名"
-  p yahoo.at("//th[@class='symbol']/h1").text.gsub!(/\((株)\)/, "")
-  puts "========================================="
-
-
+  puts '会社名'
+  p yahoo.at("//th[@class='symbol']/h1").text.gsub!(/\((株)\)/, '')
+  puts '========================================='
 end
