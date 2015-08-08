@@ -9,7 +9,7 @@ tickers.each do |ticker|
 
   puts '時価総額'
   p yahoo.css("#rfindex > div.chartFinance
-             > div:nth-child(1) > dl > dd > strong").text.gsub!(/\,/, '').to_i
+              > div:nth-child(1) > dl > dd > strong").text.gsub!(/\,/, '').to_i
 
   puts '発行済株式数'
   p yahoo.css("#rfindex > div.chartFinance > div:nth-child(2)
