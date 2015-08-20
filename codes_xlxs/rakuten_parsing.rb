@@ -4,7 +4,7 @@ require 'pry'
 
 class RakutenParser
 
-  # TICKERS = [6467]
+  # TICKERS = [6467,1384]
   # TICKERS.each do |ticker|
   #   a = RakutenParser.new(ticker)
   #   a.build_entry_nums_hash
@@ -90,5 +90,4 @@ class RakutenParser
   def quote_tbl
     rakuten_quote.css('.tbl-data-01 tr')
   end
-
 end
