@@ -33,10 +33,9 @@ class TickerCodeExtractor
 
   def extract_code
     read_xls
-    codes.delete("コード")
+    codes.delete('コード')
     codes.map!(&:to_i)
   end
-
 end
 
 # p TickerCodeExtractor.new.codes[0..10] == [1301, 1332, 1333, 1352, 1377, 1379, 1414, 1417, 1419, 1420, 1514]

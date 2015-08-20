@@ -3,7 +3,6 @@ require 'nokogiri'
 require 'pry'
 
 class RakutenParser
-
   # TICKERS = [6467,1384]
   # TICKERS.each do |ticker|
   #   a = RakutenParser.new(ticker)
@@ -18,8 +17,8 @@ class RakutenParser
   def initialize(ticker_code)
     @ticker_code = ticker_code
     @key_array = %w(year entry amount)
-    @entry_headers = ["売上高", "支払利息 営業外", "受取利息 営業外",
-                      "税引等調整前当期純利益", "研究開発", "現金",  "減価償却"]
+    @entry_headers = ['売上高', '支払利息 営業外', '受取利息 営業外',
+                      '税引等調整前当期純利益', '研究開発', '現金',  '減価償却']
     @rakuten_quote = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=1"))
     @rakuten_prof_pl = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=2"))
     @rakuten_prof_bs = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=2&fs=2"))
@@ -28,11 +27,11 @@ class RakutenParser
 
   def build_entry_nums_hash
     entry_nums.flat_map do |num_key, num_val_arr|
-      fiscal_year.map.with_index do |year,i|
+      fiscal_year.map.with_index do |year, i|
         { ticker: ticker_code,
           year: year,
           entry: num_key.to_s,
-          amount: num_val_arr[i]}
+          amount: num_val_arr[i] }
       end
     end
   end
@@ -56,25 +55,25 @@ class RakutenParser
   end
 
   def entry_checker
-    raise "Entries didn't matched! Check #{ticker_code}." if check_array.include?(false)
+    fail "Entries didn't matched! Check #{ticker_code}." if check_array.include?(false)
   end
 
   private
 
   def check_array
-    [ "    売上高" == year.css('.tbl-data-02 th')[6].text,
-      "支払利息（営業外）" == year.css('.tbl-data-02 th')[31].text,
-      "受取利息（営業外）" == year.css('.tbl-data-02 th')[32].text,
-      "税引等調整前当期純利益" == year.css('.tbl-data-02 th')[38].text,
-      "研究開発費" == year.css('.tbl-data-02 th')[23].text,
-      "現金・短期投資" == bs_entry.css('.tbl-data-02 th')[5].text,
-      "    減価償却累計額合計" == bs_entry.css('.tbl-data-02 th')[20].text
-      ]
+    ['    売上高' == year.css('.tbl-data-02 th')[6].text,
+     '支払利息（営業外）' == year.css('.tbl-data-02 th')[31].text,
+     '受取利息（営業外）' == year.css('.tbl-data-02 th')[32].text,
+     '税引等調整前当期純利益' == year.css('.tbl-data-02 th')[38].text,
+     '研究開発費' == year.css('.tbl-data-02 th')[23].text,
+     '現金・短期投資' == bs_entry.css('.tbl-data-02 th')[5].text,
+     '    減価償却累計額合計' == bs_entry.css('.tbl-data-02 th')[20].text
+     ]
   end
 
   def entry_nums
     {
-      "売上高": pl_tbl[0..3].map { |n| to_int(n)},
+      "売上高": pl_tbl[0..3].map { |n| to_int(n) },
       "支払利息_営業外": pl_tbl[104..107].map { |n| to_int(n) },
       "受取利息_営業外": pl_tbl[108..111].map { |n| to_int(n) },
       "税引等調整前当期純利益": pl_tbl[132..135].map { |n| to_int(n) },
@@ -113,10 +112,10 @@ class RakutenParser
   end
 end
 
-TICKERS = [6467]
-TICKERS.each do |ticker|
-  a = RakutenParser.new(ticker)
-  p a.build_entry_nums_hash
-  p a.build_single_year_nums_hash
-  p a.build_corp_info_hash
-end
+# TICKERS = [6467]
+# TICKERS.each do |ticker|
+#   a = RakutenParser.new(ticker)
+#   p a.build_entry_nums_hash
+#   p a.build_single_year_nums_hash
+#   p a.build_corp_info_hash
+# end
