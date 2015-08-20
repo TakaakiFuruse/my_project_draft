@@ -13,7 +13,6 @@ class RakutenParser
   # end
   # will return each infos in hash
 
-
   attr_reader :ticker_code, :key_array, :rakuten_quote, :rakuten_prof_pl, :rakuten_prof_bs, :entry_headers
 
   def initialize(ticker_code)
@@ -24,36 +23,54 @@ class RakutenParser
     @rakuten_quote = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=1"))
     @rakuten_prof_pl = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=2"))
     @rakuten_prof_bs = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=2&fs=2"))
-
+    entry_checker
   end
 
   def build_entry_nums_hash
     entry_nums.flat_map do |num_key, num_val_arr|
       fiscal_year.map.with_index do |year,i|
-        {"year": year,
-         "entry": num_key.to_s,
-         "amount": num_val_arr[i]}
+        { ticker: ticker_code,
+          year: year,
+          entry: num_key.to_s,
+          amount: num_val_arr[i]}
       end
     end
   end
 
-
   def build_single_year_nums_hash
     [
-      { year: Time.now.strftime('%Y').to_i, entry: '有利子負債',
+      { ticker: ticker_code,
+        year: Time.now.strftime('%Y').to_i, entry: '有利子負債',
         amount: to_int(quote_tbl[25].css('td')) },
-      { year: Time.now.strftime('%Y').to_i, entry: '株主持分',
+      { ticker: ticker_code,
+        year: Time.now.strftime('%Y').to_i, entry: '株主持分',
         amount: to_int(quote_tbl[21].css('td')) }
     ]
   end
 
   def build_corp_info_hash
-    { year:  Time.now.strftime('%Y').to_i,
+    { ticker: ticker_code,
+      year:  Time.now.strftime('%Y').to_i,
       corp_info: rakuten_quote.css('#segment > p').text
       }
   end
 
+  def entry_checker
+    raise "Entries didn't matched! Check #{ticker_code}." if check_array.include?(false)
+  end
+
   private
+
+  def check_array
+    [ "    売上高" == year.css('.tbl-data-02 th')[6].text,
+      "支払利息（営業外）" == year.css('.tbl-data-02 th')[31].text,
+      "受取利息（営業外）" == year.css('.tbl-data-02 th')[32].text,
+      "税引等調整前当期純利益" == year.css('.tbl-data-02 th')[38].text,
+      "研究開発費" == year.css('.tbl-data-02 th')[23].text,
+      "現金・短期投資" == bs_entry.css('.tbl-data-02 th')[5].text,
+      "    減価償却累計額合計" == bs_entry.css('.tbl-data-02 th')[20].text
+      ]
+  end
 
   def entry_nums
     {
@@ -87,7 +104,19 @@ class RakutenParser
     rakuten_prof_bs.css('#str-main > table:nth-child(4)').css('.tbl-data-02 td')
   end
 
+  def bs_entry
+    rakuten_prof_bs.css('#str-main > table:nth-child(4)')
+  end
+
   def quote_tbl
     rakuten_quote.css('.tbl-data-01 tr')
   end
+end
+
+TICKERS = [6467]
+TICKERS.each do |ticker|
+  a = RakutenParser.new(ticker)
+  p a.build_entry_nums_hash
+  p a.build_single_year_nums_hash
+  p a.build_corp_info_hash
 end

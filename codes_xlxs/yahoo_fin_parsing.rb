@@ -23,8 +23,7 @@ class YahooParser
 
        '発行済株式数': yahoo.css("#rfindex >
                                   div.chartFinance > div:nth-child(2) >
-                                  dl > dd > strong").text.gsub!(/\,/, '')
-       .to_i/1_000_000.round,
+                                  dl > dd > strong").text.gsub!(/\,/, '').to_i/1_000_000.round,
 
        'PER': yahoo.css("#rfindex > div.chartFinance > div:nth-child(5)
                                 > dl > dd > strong")
