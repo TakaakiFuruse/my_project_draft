@@ -12,7 +12,7 @@ class RakutenParser
   # end
   # will return each infos in hash
 
-  attr_reader :ticker_code, :key_array, :rakuten_quote, :rakuten_prof_pl, :rakuten_prof_bs, :entry_headers
+  attr_reader :ticker_code, :key_array, :rakuten_quote, :rakuten_prof_pl, :rakuten_prof_bs, :entry_headers, :rakuten_prof_cs
 
   def initialize(ticker_code)
     @ticker_code = ticker_code
@@ -22,6 +22,8 @@ class RakutenParser
     @rakuten_quote = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=1"))
     @rakuten_prof_pl = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=2"))
     @rakuten_prof_bs = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=2&fs=2"))
+    @rakuten_prof_cs = Nokogiri::HTML(open("https://www.trkd-asia.com/rakutensec/quote.jsp?ric=#{ticker_code}.T&c=ja&ind=2&fs=3"))
+
     entry_checker
   end
 
@@ -42,8 +44,8 @@ class RakutenParser
         year: Time.now.strftime('%Y').to_i, entry: '有利子負債',
         amount: to_int(quote_tbl[25].css('td')) },
       { ticker: ticker_code,
-        year: Time.now.strftime('%Y').to_i, entry: '株主持分',
-        amount: to_int(quote_tbl[21].css('td')) }
+        year: Time.now.strftime('%Y').to_i, entry: '純資産',
+        amount: to_int(quote_tbl[20].css('td')) }
     ]
   end
 
@@ -61,26 +63,28 @@ class RakutenParser
   private
 
   def check_array
+    # String中のスペースは故意に入れてあるので消さないこと
     ['    売上高' == year.css('.tbl-data-02 th')[6].text,
      '支払利息（営業外）' == year.css('.tbl-data-02 th')[31].text,
      '受取利息（営業外）' == year.css('.tbl-data-02 th')[32].text,
      '税引等調整前当期純利益' == year.css('.tbl-data-02 th')[38].text,
      '研究開発費' == year.css('.tbl-data-02 th')[23].text,
      '現金・短期投資' == bs_entry.css('.tbl-data-02 th')[5].text,
-     '    減価償却累計額合計' == bs_entry.css('.tbl-data-02 th')[20].text
+     "    有形固定資産の減価償却費" == cs_tbl.css('tr')[3].css('th').text,
+     "    無形固定資産の償却費" == cs_tbl.css('tr')[4].css('th').text
      ]
   end
 
   def entry_nums
-    {
-      "売上高": pl_tbl[0..3].map { |n| to_int(n) },
-      "支払利息_営業外": pl_tbl[104..107].map { |n| to_int(n) },
-      "受取利息_営業外": pl_tbl[108..111].map { |n| to_int(n) },
-      "税引等調整前当期純利益": pl_tbl[132..135].map { |n| to_int(n) },
-      "研究開発": pl_tbl[72..75].map { |n| to_int(n) },
-      "現金": bs_tbl[0..3].map { |n| to_int(n) },
-      "減価償却": bs_tbl[60..63].map { |n| to_int(n) }
-    }
+    {"売上高": pl_tbl[0..3].map { |n| to_int(n) },
+     "支払利息_営業外": pl_tbl[104..107].map { |n| to_int(n) },
+     "受取利息_営業外": pl_tbl[108..111].map { |n| to_int(n) },
+     "税引等調整前当期純利益": pl_tbl[132..135].map { |n| to_int(n) },
+     "研究開発": pl_tbl[72..75].map { |n| to_int(n) },
+     "現金": bs_tbl[0..3].map { |n| to_int(n) },
+     "有形固定資産の減価償却費": cs_tbl.css('tr')[3].css('td').map { |n| to_int(n) },
+     "無形固定資産の償却費": cs_tbl.css('tr')[4].css('td').map { |n| to_int(n) }
+     }
   end
 
   def fiscal_year
@@ -99,6 +103,10 @@ class RakutenParser
     year.css('.tbl-data-02 td')
   end
 
+  def cs_tbl
+    rakuten_prof_cs.css('table:nth-child(4)')
+  end
+
   def bs_tbl
     rakuten_prof_bs.css('#str-main > table:nth-child(4)').css('.tbl-data-02 td')
   end
@@ -112,10 +120,10 @@ class RakutenParser
   end
 end
 
-# TICKERS = [6467]
-# TICKERS.each do |ticker|
-#   a = RakutenParser.new(ticker)
-#   p a.build_entry_nums_hash
-#   p a.build_single_year_nums_hash
-#   p a.build_corp_info_hash
-# end
+TICKERS = [6467]
+TICKERS.each do |ticker|
+  a = RakutenParser.new(ticker)
+  p a.build_entry_nums_hash
+  p a.build_single_year_nums_hash
+  p a.build_corp_info_hash
+end
