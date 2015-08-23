@@ -57,22 +57,27 @@ class RakutenParser
   end
 
   def entry_checker
-    fail "Entries didn't matched! Check #{ticker_code}." if check_array.include?(false)
+    if check_hash.has_value?(false)
+      check_hash.each{|k,v| puts "#{k}: #{v}"}
+      fail "Entries didn't matched! Check #{ticker_code} on rakuten."
+    end
   end
 
   private
 
-  def check_array
+  def check_hash
     # String中のスペースは故意に入れてあるので消さないこと
-    ['    売上高' == year.css('.tbl-data-02 th')[6].text,
-     '支払利息（営業外）' == year.css('.tbl-data-02 th')[31].text,
-     '受取利息（営業外）' == year.css('.tbl-data-02 th')[32].text,
-     '税引等調整前当期純利益' == year.css('.tbl-data-02 th')[38].text,
-     '研究開発費' == year.css('.tbl-data-02 th')[23].text,
-     '現金・短期投資' == bs_entry.css('.tbl-data-02 th')[5].text,
-     "    有形固定資産の減価償却費" == cs_tbl.css('tr')[3].css('th').text,
-     "    無形固定資産の償却費" == cs_tbl.css('tr')[4].css('th').text
-     ]
+    {"売上高": '    売上高' == year.css('.tbl-data-02 th')[6].text,
+     '支払利息（営業外）': '支払利息（営業外）' == year.css('.tbl-data-02 th')[31].text,
+     '受取利息（営業外）': '受取利息（営業外）' == year.css('.tbl-data-02 th')[32].text,
+     '税引等調整前当期純利益': '税引等調整前当期純利益' == year.css('.tbl-data-02 th')[38].text,
+     '研究開発費': '研究開発費' == year.css('.tbl-data-02 th')[23].text,
+     '現金・短期投資': '現金・短期投資' == bs_entry.css('.tbl-data-02 th')[5].text,
+     "有形固定資産の減価償却費": "    有形固定資産の減価償却費" == cs_tbl.css('tr')[3].css('th').text,
+     "無形固定資産の償却費": "    無形固定資産の償却費" == cs_tbl.css('tr')[4].css('th').text,
+     "有利子負債": "有利子負債" == quote_tbl[25].css('th').text,
+     "純資産": "純資産" ==  quote_tbl[20].css('th').text,
+     }
   end
 
   def entry_nums
