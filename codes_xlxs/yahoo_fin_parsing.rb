@@ -27,11 +27,11 @@ class YahooParser
 
         'PER': yahoo.css("#rfindex > div.chartFinance > div:nth-child(5)
                                 > dl > dd > strong")
-          .text.gsub!(/\((連)\) /, '').to_f,
+        .text.gsub!(/\((連)\) /, '').to_f,
 
         'PBR': yahoo.css("#rfindex > div.chartFinance > div:nth-child(6)
                                 > dl > dd > strong").text.gsub!(/\((連)\) /, '')
-          .to_f,
+        .to_f,
 
         '前日終値': yahoo.css("#detail > div.innerDate > div:nth-child(1)
                                      > dl > dd > strong").text.to_i,

@@ -42,10 +42,13 @@ class RakutenParser
     [
       { ticker: ticker_code,
         year: Time.now.strftime('%Y').to_i, entry: '有利子負債',
-        amount: to_int(quote_tbl[25].css('td')) },
+        amount: to_int(quote_tbl[25].css('td'))},
       { ticker: ticker_code,
         year: Time.now.strftime('%Y').to_i, entry: '純資産',
-        amount: to_int(quote_tbl[20].css('td')) }
+        amount: to_int(quote_tbl[20].css('td'))},
+      { ticker: ticker_code,
+        year: Time.now.strftime('%Y').to_i, entry: '株主持分',
+        amount: to_int(quote_tbl[21].css('td'))}
     ]
   end
 
@@ -77,6 +80,7 @@ class RakutenParser
      "無形固定資産の償却費": "    無形固定資産の償却費" == cs_tbl.css('tr')[4].css('th').text,
      "有利子負債": "有利子負債" == quote_tbl[25].css('th').text,
      "純資産": "純資産" ==  quote_tbl[20].css('th').text,
+     "株主持分": "株主持分" ==  quote_tbl[21].css('th').text
      }
   end
 
@@ -123,12 +127,4 @@ class RakutenParser
   def quote_tbl
     rakuten_quote.css('.tbl-data-01 tr')
   end
-end
-
-TICKERS = [6467]
-TICKERS.each do |ticker|
-  a = RakutenParser.new(ticker)
-  p a.build_entry_nums_hash
-  p a.build_single_year_nums_hash
-  p a.build_corp_info_hash
 end
