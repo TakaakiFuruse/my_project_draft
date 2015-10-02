@@ -1,7 +1,8 @@
 require 'rubygems'
 require 'httpclient'
 
-class TickerXlsDownloder
+class TickerListsDownloder
+  #  TickerListsDownloder.new().run => download lists of ticker codes
   attr_reader :base_url, :xls_ar
   attr_accessor :http_client
 
@@ -33,6 +34,3 @@ class TickerXlsDownloder
   end
 
 end
-
-
-TickerXlsDownloder.new().run
